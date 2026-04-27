@@ -110,7 +110,7 @@ design/           # Sơ đồ, hình ảnh thiết kế
 ### 5. Cấu Trúc Thư Mục
 
 ```
-project_IT3180_nhom_10/
+phan_mem_quan_ly_chung_cu/
 ├── back-end/
 │   ├── src/
 │   ├── test/
