@@ -5,7 +5,7 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-content">
-        <span className="navbar-text">Apartment management system from TPH</span>
+        <span className="navbar-text">Quản lý chung cư - Nhóm 15</span>
       </div>
     </nav>
   );
