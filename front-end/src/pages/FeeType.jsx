@@ -189,7 +189,6 @@ const FeeType = () => {
           ? selectedFeeType.UnitPrice
           : "Tùy thuộc vào từng hộ"}
       </p>
-      <p><b>Đơn vị:</b> {selectedFeeType.Unit}</p>
       <p><b>Mô tả:</b> {selectedFeeType.Description || '---'}</p>
       <button className="modal-cancel" onClick={() => setSelectedFeeType(null)}>Đóng</button>
     </div>

@@ -7,7 +7,6 @@ const AddFeeType = ({ open, onClose, onSubmit, initialData = {} }) => {
     category: "Bắt buộc",
     scope: "Chung",
     unitPrice: "",
-    unit: "",
     description: ""
   });
 
@@ -20,7 +19,6 @@ const AddFeeType = ({ open, onClose, onSubmit, initialData = {} }) => {
         category: initialData.Category || "Bắt buộc",
         scope: initialData.Scope || "Chung",
         unitPrice: initialData.UnitPrice || "",
-        unit: initialData.Unit || "",
         description: initialData.Description || ""
       });
     } else {
@@ -29,7 +27,6 @@ const AddFeeType = ({ open, onClose, onSubmit, initialData = {} }) => {
         category: "Bắt buộc",
         scope: "Chung",
         unitPrice: "",
-        unit: "",
         description: ""
       });
     }
@@ -62,7 +59,6 @@ const AddFeeType = ({ open, onClose, onSubmit, initialData = {} }) => {
       Category: form.category,
       Scope: form.scope,
       UnitPrice: form.unitPrice ? Number(form.unitPrice) : null,
-      Unit: form.unit.trim(),
       Description: form.description.trim()
     });
   };
@@ -107,16 +103,6 @@ const AddFeeType = ({ open, onClose, onSubmit, initialData = {} }) => {
               value={form.unitPrice}
               onChange={handleChange}
               placeholder="Nhập đơn giá"
-            />
-          </div>
-          <div className="form-group">
-            <label>Đơn vị:</label>
-            <input
-              type="text"
-              name="unit"
-              value={form.unit}
-              onChange={handleChange}
-              placeholder="Nhập đơn vị"
             />
           </div>
           <div className="form-group">
