@@ -47,8 +47,8 @@ const Vehicle = () => {
 
 
   const vehicleImageLinks = [
-    "https://image.luatvietnam.vn/uploaded/twebp/images/original/2024/02/16/boc-dau-xe-may-bi-phat-the-nao_1602162345.jpg", // Xe máy
-    "https://s1storage.2banh.vn/image/2014/02/cach-boc-dau-xe-con-5824-1393314980-530c4ca4ddec6.jpg"
+    "https://cdn.vietnammoi.vn/2019/3/30/kha-2-15538558574391783403737-1553906380493830876080.png", // Xe máy
+    "https://tse2.mm.bing.net/th/id/OIP.VfVL0GTwEPJZOfrCodX0qAHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
   ];
 
   const img1 = vehicleImageLinks[0];

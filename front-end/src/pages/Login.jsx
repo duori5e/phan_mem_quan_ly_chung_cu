@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Login.css';
-import loginImage from '../assets/v5.jpg';
+import loginImage from '../assets/v6.jpg';
 import axiosInstance from '../untils/axiosIntance'; 
 
 const Login = () => {
@@ -52,7 +52,6 @@ const Login = () => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', data.role);
       localStorage.setItem('id', data.id);
-      localStorage.setItem('username', formData.username);
       // console.log("id", data.id);
       // console.log(data);
       navigate('/home');
