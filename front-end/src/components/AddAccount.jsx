@@ -60,8 +60,8 @@ const AddAccount = ({ open, onClose, onSubmit, initialData, mode }) => {
   if (!open) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
+    <div className="modal-overlay account-form-overlay">
+      <div className="modal account-form-modal">
         <h2>{mode === "edit" ? 'Cập nhật tài khoản' : 'Thêm mới tài khoản'}</h2>
         <form onSubmit={handleSubmit} className="add-account-form">
           <div className="form-group">
@@ -147,7 +147,7 @@ const AddAccount = ({ open, onClose, onSubmit, initialData, mode }) => {
             />
           </div>
           <div className="account-modal-actions">
-            <button type="submit">
+            <button type="submit" className="account-modal-submit">
               {mode === "edit" ? "Cập nhật" : "Thêm mới"}
             </button>
             <button type="button" className="account-modal-cancel" onClick={onClose}>

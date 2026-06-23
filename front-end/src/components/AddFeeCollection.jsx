@@ -89,8 +89,8 @@ const AddFeeCollection = ({ open, onClose, onSubmit, initialData = {} }) => {
 
     return (
         <>
-        <div className="modal-overlay">
-            <div className="modal-form-new">
+        <div className="modal-overlay fee-collection-form-overlay">
+            <div className="modal-form-new fee-collection-form-modal">
                 <h2>{initialData ? 'Chỉnh sửa đợt thu phí' : 'Thêm đợt thu phí'}</h2>
                 <form onSubmit={handleSubmit} className="add-fee-collection-form">
                     <div className="form-group">

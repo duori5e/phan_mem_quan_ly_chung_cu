@@ -318,7 +318,7 @@ html, body {
   border-radius: 8px;
   width: 90%;
   max-width: 500px;
-  max-height: 90vh;
+  max-height: calc(100vh - 40px);
   overflow-y: auto;
 }
 

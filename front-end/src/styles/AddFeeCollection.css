@@ -1,4 +1,4 @@
-.modal-overlay {
+.fee-collection-form-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -8,46 +8,50 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px;
   z-index: 999;
 }
 
-.modal-form-new {
-   min-height: 200px;
-  max-height: 80vh;
-  overflow-y: auto;
+.modal-form-new.fee-collection-form-modal {
+  min-height: 200px;
+  max-height: calc(100vh - 40px);
   background: #ffffff;
-  padding: 24px 32px;
+  padding: 22px 28px;
   border-radius: 12px;
-  width: 400px;
-  max-width: 450px;
+  width: min(430px, 95vw);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 .add-fee-collection-form .form-group {
-  height: 100;
-  /* margin-bottom: 5px; */
   display: flex;
   flex-direction: column;
 }
 
-.modal-form-new label {
+.modal-form-new.fee-collection-form-modal label {
   font-weight: 400;
   font-size: 16px;
   
 }
-.modal-form-new h2 {
-  margin-bottom: 10px;
+.modal-form-new.fee-collection-form-modal h2 {
+  margin: 0 0 12px;
   text-align: center;
   color: #102eb4;
+  flex-shrink: 0;
 }
 
-.modal-form-new form {
+.modal-form-new.fee-collection-form-modal form {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
-.modal-form-new input,
-.modal-form-new select {
+.modal-form-new.fee-collection-form-modal input,
+.modal-form-new.fee-collection-form-modal select {
   width: 100%;
   padding: 8px 10px;
   border-radius: 6px;
@@ -55,8 +59,10 @@
   box-sizing: border-box;
   color: #000;
 }
-.modal-form-new textarea {
+.modal-form-new.fee-collection-form-modal textarea {
   width: 100%;
+  min-height: 68px;
+  resize: vertical;
   padding: 8px 10px;
   border-radius: 6px;
   border: 1px solid #cccccc;
@@ -64,7 +70,7 @@
   color: #000;
 }
 
-.form-actions {
+.add-fee-collection-form .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -92,4 +98,24 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 .add-fee-type-inline-btn:hover {
   color: #0056b3;
+}
+
+@media (max-width: 500px) {
+  .fee-collection-form-overlay {
+    padding: 12px;
+  }
+
+  .modal-form-new.fee-collection-form-modal {
+    width: 100%;
+    max-height: calc(100vh - 24px);
+    padding: 18px 14px;
+  }
+
+  .add-fee-collection-form .form-actions {
+    flex-direction: column;
+  }
+
+  .add-fee-collection-form .form-actions button {
+    width: 100%;
+  }
 }

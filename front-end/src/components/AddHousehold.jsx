@@ -47,8 +47,8 @@ const AddHousehold = ({ open, onClose, onSubmit, initialData }) => {
   if (!open) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
+    <div className="modal-overlay household-form-overlay">
+      <div className="modal household-form-modal">
         <h2>{initialData ? 'Cập nhật hộ gia đình' : 'Thêm mới hộ gia đình'}</h2>
         <form onSubmit={handleSubmit} className="add-household-form">
           <div className="form-group">

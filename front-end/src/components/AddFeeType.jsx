@@ -66,8 +66,8 @@ const AddFeeType = ({ open, onClose, onSubmit, initialData = {} }) => {
   if (!open) return null;
 
   return (
-    <div className="modal-overlay-feetype">
-      <div className="modal-form-new">
+    <div className="modal-overlay-feetype fee-type-form-overlay">
+      <div className="modal-form-new fee-type-form-modal">
         <h2>{initialData && Object.keys(initialData).length > 0 ? "Chỉnh sửa loại phí" : "Thêm loại phí"}</h2>
         <form onSubmit={handleSubmit} className="add-fee-type-form">
           <div className="form-group">

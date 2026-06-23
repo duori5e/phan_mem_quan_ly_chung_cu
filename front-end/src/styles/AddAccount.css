@@ -1,4 +1,4 @@
-.modal-overlay {
+.account-form-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -8,23 +8,45 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px;
   z-index: 1000;
 }
 
-.modal {
+.modal.account-form-modal {
   background: #fff;
   border-radius: 8px;
-  padding: 32px 24px 24px 24px;
-  min-width: 350px;
+  padding: 22px 24px 18px 24px;
+  width: min(430px, 95vw);
   max-width: 95vw;
+  max-height: calc(100vh - 40px);
   box-shadow: 0 2px 16px rgba(0,0,0,0.15);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal.account-form-modal h2 {
+  margin: 0 0 16px 0;
+  font-size: 1.5rem;
+  color: #1a73e8;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.add-account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .add-account-form .form-group {
-  margin-bottom: 18px;
   display: flex;
   flex-direction: column;
+  gap: 5px;
 }
 
 .add-account-form label {
@@ -53,7 +75,8 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 10px;
+  padding-top: 4px;
+  flex-shrink: 0;
 }
 
 .account-modal-submit {
@@ -86,8 +109,22 @@
 }
 
 @media (max-width: 500px) {
-  .modal {
-    min-width: 90vw;
-    padding: 16px 8px;
+  .account-form-overlay {
+    padding: 12px;
+  }
+
+  .modal.account-form-modal {
+    width: 100%;
+    max-height: calc(100vh - 24px);
+    padding: 18px 14px 14px;
+  }
+
+  .account-modal-actions {
+    flex-direction: column;
+  }
+
+  .account-modal-submit,
+  .account-modal-cancel {
+    width: 100%;
   }
 }
