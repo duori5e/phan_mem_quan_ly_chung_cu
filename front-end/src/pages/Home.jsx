@@ -1,55 +1,118 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import '../styles/Home.css';
 import Header from '../components/Header';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import axiosInstance from '../untils/axiosIntance';
 
-let MAX_HOUSEHOLD = 100;
-let MAX_SINGLE_ROOMS = 50;
-let MAX_DOUBLE_ROOMS = 50;
+const MAX_HOUSEHOLD = 100;
+const MAX_SINGLE_ROOMS = 50;
+const MAX_DOUBLE_ROOMS = 50;
 
-const COLORS = ['#27ae60', '#e74c3c', '#ff9900', '#1972bb', '#8e44ad']; // 5 màu cho 5 nhóm tuổi
+const AGE_COLORS = ['#27ae60', '#e74c3c', '#ff9900', '#1972bb', '#8e44ad'];
 
-// Hàm tính tuổi từ ngày sinh
 const getAge = (dob) => {
   if (!dob) return 0;
+
   const birth = new Date(dob);
+  if (Number.isNaN(birth.getTime())) return 0;
+
   const today = new Date();
   let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-    age--;
+  const monthDiff = today.getMonth() - birth.getMonth();
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age -= 1;
   }
+
   return age;
 };
 
-// Hàm kiểm tra trong vòng 14 ngày
 const isWithin14Days = (dateStr) => {
   if (!dateStr) return false;
+
   const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return false;
+
   const today = new Date();
   const diffTime = Math.abs(today - date);
   return diffTime / (1000 * 60 * 60 * 24) <= 14;
 };
 
-// Hàm lấy tên tháng từ số tháng
 const getMonthName = (month) => {
   const months = [
-    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-    'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+    'Tháng 1',
+    'Tháng 2',
+    'Tháng 3',
+    'Tháng 4',
+    'Tháng 5',
+    'Tháng 6',
+    'Tháng 7',
+    'Tháng 8',
+    'Tháng 9',
+    'Tháng 10',
+    'Tháng 11',
+    'Tháng 12',
   ];
+
   return months[month];
 };
 
-// Hàm đánh giá mức độ hoàn thành
 const getCompletionLevel = (percentage) => {
   if (percentage >= 100) return 'Xuất sắc';
   if (percentage >= 80) return 'Tốt';
   if (percentage >= 50) return 'Khá';
-  return 'Kém';
+  return 'Cần theo dõi';
 };
+
+const formatCurrency = (amount) =>
+  `${Number(amount || 0).toLocaleString('vi-VN')} VNĐ`;
+
+const asArray = (value) => (Array.isArray(value) ? value : []);
+
+const isCurrentMonthCollection = (collection, month, year) => {
+  const startDate = new Date(collection.StartDate);
+  const endDate = collection.EndDate ? new Date(collection.EndDate) : startDate;
+
+  const startMatches =
+    !Number.isNaN(startDate.getTime()) &&
+    startDate.getMonth() === month &&
+    startDate.getFullYear() === year;
+
+  const endMatches =
+    !Number.isNaN(endDate.getTime()) &&
+    endDate.getMonth() === month &&
+    endDate.getFullYear() === year;
+
+  return startMatches || endMatches;
+};
+
+const StatCard = ({ title, value, note, tone }) => (
+  <div className={`dashboard-stat-card ${tone ? `tone-${tone}` : ''}`}>
+    <span className="dashboard-stat-title">{title}</span>
+    <strong>{value}</strong>
+    {note && <span className="dashboard-stat-note">{note}</span>}
+  </div>
+);
+
+const MetricLine = ({ label, value }) => (
+  <div className="dashboard-metric-line">
+    <span>{label}</span>
+    <strong>{value}</strong>
+  </div>
+);
 
 const Home = () => {
   const [open, setOpen] = useState(() => {
@@ -57,244 +120,263 @@ const Home = () => {
     return saved === null ? false : JSON.parse(saved);
   });
 
-  useEffect(() => {
-    localStorage.setItem('sidebarOpen', JSON.stringify(open));
-  }, [open]);
-
   const [households, setHouseholds] = useState([]);
   const [residents, setResidents] = useState([]);
   const [feeCollections, setFeeCollections] = useState([]);
   const [feeDetails, setFeeDetails] = useState([]);
-  const [currentMonthStats, setCurrentMonthStats] = useState({
-    totalFeeTypes: 0,
-    totalAmount: 0,
-    completionRate: 0,
-    completionLevel: '',
-    paymentPercentage: 0,
-    totalFeeDetails: 0,
-    paidFeeDetails: 0
-  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Lấy dữ liệu hộ gia đình và cư dân
-    axiosInstance.get('/households/get-all-households').then(res => {
-      setHouseholds(res.data.households || res.data);
-    });
-    axiosInstance.get('/residents/get-all-residents').then(res => {
-      setResidents(res.data.residents || res.data);
-    });
+    localStorage.setItem('sidebarOpen', JSON.stringify(open));
+  }, [open]);
 
-    // Lấy dữ liệu thu phí
-    axiosInstance.get('/fee-collection/get-all-collection').then(res => {
-      setFeeCollections(res.data.feeCollections || res.data);
-    });
-    axiosInstance.get('/fee-detail/get-all-fee-detail').then(res => {
-      // In ra cấu trúc dữ liệu của một FeeDetail để kiểm tra
-      console.log('Cấu trúc dữ liệu FeeDetail:', res.data.feeDetails?.[0]);
-      setFeeDetails(res.data.feeDetails);
-    });
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      setError('');
+
+      try {
+        const [householdRes, residentRes, feeCollectionRes, feeDetailRes] =
+          await Promise.all([
+            axiosInstance.get('/households/get-all-households'),
+            axiosInstance.get('/residents/get-all-residents'),
+            axiosInstance.get('/fee-collection/get-all-collection'),
+            axiosInstance.get('/fee-detail/get-all-fee-detail'),
+          ]);
+
+        setHouseholds(asArray(householdRes.data.households || householdRes.data));
+        setResidents(asArray(residentRes.data.residents || residentRes.data));
+        setFeeCollections(asArray(feeCollectionRes.data.feeCollections || feeCollectionRes.data));
+        setFeeDetails(asArray(feeDetailRes.data.feeDetails || feeDetailRes.data));
+      } catch (fetchError) {
+        setError('Không thể tải dữ liệu thống kê. Vui lòng thử lại sau.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
-  // Tính toán thống kê phí theo tháng hiện tại
-  useEffect(() => {
+  const stats = useMemo(() => {
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
 
-    // Lọc các khoản thu phí trong tháng hiện tại
-    const currentMonthCollections = feeCollections.filter(collection => {
-      const startDate = new Date(collection.StartDate);
-      const endDate = new Date(collection.EndDate);
-      
-      // Kiểm tra nếu ngày bắt đầu hoặc kết thúc nằm trong tháng hiện tại
-      return (startDate.getMonth() === currentMonth && startDate.getFullYear() === currentYear) ||
-             (endDate.getMonth() === currentMonth && endDate.getFullYear() === currentYear);
-    });
-
-    // In ra danh sách CollectionID của tháng hiện tại
-    console.log('Danh sách CollectionID trong tháng hiện tại:', 
-      currentMonthCollections.map(c => ({
-        CollectionID: c.CollectionID,
-        FeeType: c.FeeType,
-        StartDate: c.StartDate,
-        EndDate: c.EndDate
-      }))
+    const currentMonthCollections = feeCollections.filter((collection) =>
+      isCurrentMonthCollection(collection, currentMonth, currentYear)
     );
 
-    // Lọc và in ra tất cả FeeDetail có CollectionID thỏa mãn
-    const currentMonthFeeDetails = feeDetails.filter(detail => 
-      currentMonthCollections.some(collection => collection.CollectionID === detail.CollectionID)
-    );
-    console.log('Tất cả FeeDetail có CollectionID thỏa mãn:', 
-      currentMonthFeeDetails.map(detail => ({
-        CollectionID: detail.CollectionID,
-        Amount: detail.Amount,
-        Status: detail.PaymentStatus,
-        PaymentDate: detail.PaymentDate
-      }))
+    const currentMonthFeeDetails = feeDetails.filter((detail) =>
+      currentMonthCollections.some(
+        (collection) => collection.CollectionID === detail.CollectionID
+      )
     );
 
-    // Tính thống kê thanh toán
-    const totalFeeDetails = currentMonthFeeDetails.filter(detail =>
-      Number(detail.Amount) !== 0
-    ).length;
-    const paidFeeDetails = currentMonthFeeDetails.filter(detail => 
-      detail.PaymentStatus === 'Đã đóng'
-    ).length;
-    
-    console.log('Tổng số FeeDetail trong tháng hiện tại:', totalFeeDetails);
+    const payableFeeDetails = currentMonthFeeDetails.filter(
+      (detail) => Number(detail.Amount) !== 0
+    );
 
-    const paymentPercentage = totalFeeDetails > 0 ? (paidFeeDetails / totalFeeDetails) * 100 : 0;
+    const paidFeeDetails = payableFeeDetails.filter(
+      (detail) => detail.PaymentStatus === 'Đã đóng'
+    );
 
-    // Đếm số loại phí đã thu
-    const uniqueFeeTypes = new Set(currentMonthCollections.map(c => c.FeeType)).size;
+    const paymentPercentage =
+      payableFeeDetails.length > 0
+        ? (paidFeeDetails.length / payableFeeDetails.length) * 100
+        : 0;
 
-    // Tính tổng số tiền đã thu từ các FeeDetail có Status = 'Đã đóng'
-    const totalAmount = feeDetails.reduce((sum, detail) => {
-      // Kiểm tra nếu detail thuộc một trong các collection của tháng hiện tại
-      const isInCurrentMonth = currentMonthCollections.some(collection => 
-        collection.CollectionID === detail.CollectionID
-      );
-      
-      // Chỉ cộng vào tổng nếu detail thuộc tháng hiện tại và đã đóng
-      if (isInCurrentMonth && (detail.PaymentStatus === 'Đã đóng')) {
-        // In ra thông tin chi tiết của các khoản phí đã đóng
-        console.log('Khoản phí đã đóng:', {
-          CollectionID: detail.CollectionID,
-          Amount: detail.Amount,
-          Status: detail.PaymentStatus
-        });
-        // Convert to number using parseFloat to ensure proper addition
-        return sum + (parseFloat(detail.Amount) || 0);
-      }
-      return sum;
+    const totalAmount = currentMonthFeeDetails.reduce((sum, detail) => {
+      if (detail.PaymentStatus !== 'Đã đóng') return sum;
+      return sum + (parseFloat(detail.Amount) || 0);
     }, 0);
-    console.log('Tổng số tiền đã thu:', totalAmount);
 
-    // Tính tỷ lệ hoàn thành (giả sử có 10 loại phí cần thu)
-    const totalFeeTypes = 10; // Tổng số loại phí cần thu
-    const completionRate = (uniqueFeeTypes / totalFeeTypes) * 100;
+    const singleRooms = households.filter((household) => household.Type === 'Đơn');
+    const doubleRooms = households.filter((household) => household.Type === 'Đôi');
 
-    setCurrentMonthStats({
-      totalFeeTypes: uniqueFeeTypes,
-      totalAmount: totalAmount,
-      completionRate: completionRate.toFixed(1),
+    const permanentCount = residents.filter(
+      (resident) => resident.ResidencyStatus === 'Thường trú'
+    ).length;
+    const temporaryCount = residents.filter(
+      (resident) => resident.ResidencyStatus === 'Tạm trú'
+    ).length;
+    const awayCount = residents.filter(
+      (resident) => resident.ResidencyStatus === 'Tạm vắng'
+    ).length;
+    const movedCount = residents.filter(
+      (resident) => resident.ResidencyStatus === 'Đã chuyển đi'
+    ).length;
+
+    return {
+      monthName: getMonthName(currentMonth),
+      totalHouseholds: households.length,
+      totalResidents: residents.length,
+      availableSingleRooms: MAX_SINGLE_ROOMS - singleRooms.length,
+      availableDoubleRooms: MAX_DOUBLE_ROOMS - doubleRooms.length,
+      totalFeeTypes: new Set(currentMonthCollections.map((collection) => collection.FeeType)).size,
+      totalAmount,
+      paymentPercentage,
       completionLevel: getCompletionLevel(paymentPercentage),
-      paymentPercentage: paymentPercentage.toFixed(1),
-      totalFeeDetails: totalFeeDetails,
-      paidFeeDetails: paidFeeDetails
-    });
-  }, [feeCollections, feeDetails]);
+      paidFeeDetails: paidFeeDetails.length,
+      totalFeeDetails: payableFeeDetails.length,
+      newComeCount: residents.filter((resident) => isWithin14Days(resident.RegistrationDate)).length,
+      newLeaveCount: residents.filter(
+        (resident) =>
+          resident.ResidencyStatus === 'Đã chuyển đi' &&
+          isWithin14Days(resident.RegistrationDate)
+      ).length,
+      residencyData: [
+        { name: 'Thường trú', value: permanentCount },
+        { name: 'Tạm trú', value: temporaryCount },
+        { name: 'Tạm vắng', value: awayCount },
+        { name: 'Chuyển đi', value: movedCount },
+      ],
+      roomData: [
+        { name: 'Phòng đơn', used: singleRooms.length, available: MAX_SINGLE_ROOMS - singleRooms.length },
+        { name: 'Phòng đôi', used: doubleRooms.length, available: MAX_DOUBLE_ROOMS - doubleRooms.length },
+      ],
+    };
+  }, [feeCollections, feeDetails, households, residents]);
 
-  const childrenCount = residents.filter(r => getAge(r.DateOfBirth || r.dateOfBirth) < 12).length;
-  const teenCount = residents.filter(r => {
-    const age = getAge(r.DateOfBirth || r.dateOfBirth);
-    return age >= 12 && age <= 18;
-  }).length;
-  const adultCount = residents.filter(r => {
-    const age = getAge(r.DateOfBirth || r.dateOfBirth);
-    return age >= 19 && age <= 39;
-  }).length;
-  const middleAgeCount = residents.filter(r => {
-    const age = getAge(r.DateOfBirth || r.dateOfBirth);
-    return age >= 40 && age <= 65;
-  }).length;
-  const oldCount = residents.filter(r => getAge(r.DateOfBirth || r.dateOfBirth) > 65).length;
+  const ageData = useMemo(() => {
+    const getCount = (predicate) =>
+      residents.filter((resident) => predicate(getAge(resident.DateOfBirth || resident.dateOfBirth))).length;
 
-  const dataPie = [
-    { name: 'Trẻ em', value: childrenCount },
-    { name: 'Thanh niên', value: teenCount },
-    { name: 'Trưởng thành', value: adultCount },
-    { name: 'Trung niên', value: middleAgeCount },
-    { name: 'Người già', value: oldCount },
-  ];
+    return [
+      { name: 'Trẻ em', value: getCount((age) => age < 12) },
+      { name: 'Thanh niên', value: getCount((age) => age >= 12 && age <= 18) },
+      { name: 'Trưởng thành', value: getCount((age) => age >= 19 && age <= 39) },
+      { name: 'Trung niên', value: getCount((age) => age >= 40 && age <= 65) },
+      { name: 'Người cao tuổi', value: getCount((age) => age > 65) },
+    ];
+  }, [residents]);
 
-  const totalHouseholds = households.length;
-  const totalResidents = residents.length;
-
-  const singleRooms = households.filter(h => h.Type === 'Đơn');
-  const doubleRooms = households.filter(h => h.Type === 'Đôi');
-  const availableSingleRooms = MAX_SINGLE_ROOMS - singleRooms.length;
-  const availableDoubleRooms = MAX_DOUBLE_ROOMS - doubleRooms.length;
-
-  const newComeCount = residents.filter(r => isWithin14Days(r.RegistrationDate)).length;
-  const newLeaveCount = residents.filter(
-    r => r.ResidencyStatus === "Đã chuyển đi" && isWithin14Days(r.RegistrationDate)
-  ).length;
-
-  const permanentCount = residents.filter(r => r.ResidencyStatus === "Thường trú").length;
-  const temporaryCount = residents.filter(r => r.ResidencyStatus === "Tạm trú").length;
+  const paymentProgress = Math.min(Math.max(stats.paymentPercentage, 0), 100);
 
   return (
     <div className="home-container">
       <Header />
-      <div className="home-body">
-        <Sidebar open={open} setOpen={setOpen} />
-        <div 
-          className={`home-content ${open ? 'sidebar-open' : 'sidebar-closed'}`}
-          style={{
-            overflowY: 'auto',
-            maxHeight: 'calc(100vh - 90px)', // Trừ đi chiều cao của header
-            paddingBottom: '20px',
-            scrollbarWidth: 'thin',
-            scrollbarColor: '#49aac0 #f1f1f1'
-          }}
-        >
-          <div className="dashboard">
-            {/* Hàng trên - 3 khối nhỏ */}
-            <div className="dashboard-top">
-              <div className="card small-card">
-                <span className="card-title"><strong>Thông tin chung:</strong></span>
-                <span className="card-title">🏠 Tổng số hộ: <strong>{totalHouseholds}/{MAX_HOUSEHOLD}</strong></span>
-                <span className="card-title">🏠 Tổng số nhân khẩu: <strong>{totalResidents}</strong></span>
-                <span className="card-title">🏠 Số phòng đơn còn: <strong>{availableSingleRooms}/{MAX_SINGLE_ROOMS}</strong></span>
-                <span className="card-title">🏠 Số phòng đôi còn: <strong>{availableDoubleRooms}/{MAX_DOUBLE_ROOMS}</strong></span>
-              </div>
-              <div className="card small-card">
-                <span className="card-title"><strong>Thống kê phí {getMonthName(new Date().getMonth())}:</strong></span>
-                <span className="card-title">💰 Số loại phí thu trong tháng: <strong>{currentMonthStats.totalFeeTypes}</strong></span>
-                <span className="card-title">💰 Tổng số tiền đã thu: <strong>{currentMonthStats.totalAmount.toLocaleString('vi-VN')} VNĐ</strong></span>
-                <span className="card-title">💰 Tỷ lệ hoàn thành: <strong>{currentMonthStats.paymentPercentage}%</strong></span> 
-                <span className="card-title">💰 Mức độ hoàn thành: <strong>{currentMonthStats.completionLevel}</strong></span>
-              </div>
-              <div className="card small-card">
-                <span className="card-title"><strong>Trạng thái cư trú:</strong></span>
-                <span className="card-title">🏡 Thường trú: <strong>{permanentCount}</strong></span>
-                <span className="card-title">🏡 Tạm trú: <strong>{temporaryCount}</strong></span>
-                <span className="card-title">🏡 Mới chuyển đến: <strong>{newComeCount}</strong></span>
-                <span className="card-title">🏡 Mới chuyển đi: <strong>{newLeaveCount}</strong></span>
-              </div>
-            </div>
+      <Sidebar open={open} setOpen={setOpen} />
 
-            {/* Hàng dưới - 2 khối biểu đồ lớn */}
-            <div className="dashboard-bottom">
-              <div className="card large-card">
-                <h3 style={{ marginBottom: 16 }}>Biểu đồ cơ cấu nhân khẩu</h3>
-                <ResponsiveContainer width="100%" height={400}>
-                  <PieChart>
-                    <Pie
-                      data={dataPie}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={150}
-                      label
-                    >
-                      {dataPie.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index]} />
-                      ))}
-                    </Pie>
-                    <Legend />
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+      <main className={`home-content ${open ? 'sidebar-open' : 'sidebar-closed'}`}>
+        <section className="dashboard">
+          <div className="dashboard-heading">
+            <div>
+              <span className="dashboard-eyebrow">Tổng quan vận hành</span>
+              <h1>Thống kê chung cư</h1>
             </div>
-
+            <span className="dashboard-period">{stats.monthName}</span>
           </div>
-        </div>
-      </div>
+
+          {error && <div className="dashboard-alert">{error}</div>}
+          {loading && <div className="dashboard-loading">Đang tải dữ liệu thống kê...</div>}
+
+          <div className="dashboard-stats">
+            <StatCard
+              title="Hộ gia đình"
+              value={`${stats.totalHouseholds}/${MAX_HOUSEHOLD}`}
+              note="Tổng số hộ đang quản lý"
+              tone="blue"
+            />
+            <StatCard
+              title="Nhân khẩu"
+              value={stats.totalResidents}
+              note="Cư dân trong hệ thống"
+              tone="green"
+            />
+            <StatCard
+              title="Đã thu trong tháng"
+              value={formatCurrency(stats.totalAmount)}
+              note={`${stats.paidFeeDetails}/${stats.totalFeeDetails} khoản đã đóng`}
+              tone="gold"
+            />
+            <StatCard
+              title="Hoàn thành thu phí"
+              value={`${stats.paymentPercentage.toFixed(1)}%`}
+              note={stats.completionLevel}
+              tone="cyan"
+            />
+          </div>
+
+          <div className="dashboard-grid">
+            <section className="dashboard-panel payment-panel">
+              <div className="panel-heading">
+                <h2>Thu phí {stats.monthName}</h2>
+                <span>{stats.completionLevel}</span>
+              </div>
+              <div className="payment-progress">
+                <div style={{ width: `${paymentProgress}%` }} />
+              </div>
+              <div className="dashboard-metrics">
+                <MetricLine label="Loại phí phát sinh" value={stats.totalFeeTypes} />
+                <MetricLine label="Khoản đã đóng" value={stats.paidFeeDetails} />
+                <MetricLine label="Tổng khoản cần thu" value={stats.totalFeeDetails} />
+                <MetricLine label="Tổng tiền đã thu" value={formatCurrency(stats.totalAmount)} />
+              </div>
+            </section>
+
+            <section className="dashboard-panel">
+              <div className="panel-heading">
+                <h2>Cư trú</h2>
+                <span>14 ngày gần đây</span>
+              </div>
+              <div className="dashboard-metrics">
+                <MetricLine label="Thường trú" value={stats.residencyData[0].value} />
+                <MetricLine label="Tạm trú" value={stats.residencyData[1].value} />
+                <MetricLine label="Mới chuyển đến" value={stats.newComeCount} />
+                <MetricLine label="Mới chuyển đi" value={stats.newLeaveCount} />
+              </div>
+            </section>
+          </div>
+
+          <div className="dashboard-charts">
+            <section className="dashboard-panel chart-panel">
+              <div className="panel-heading">
+                <h2>Cơ cấu nhân khẩu</h2>
+                <span>Theo nhóm tuổi</span>
+              </div>
+              <ResponsiveContainer width="100%" height={320}>
+                <PieChart>
+                  <Pie
+                    data={ageData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={105}
+                    label
+                  >
+                    {ageData.map((entry, index) => (
+                      <Cell key={entry.name} fill={AGE_COLORS[index]} />
+                    ))}
+                  </Pie>
+                  <Legend />
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </section>
+
+            <section className="dashboard-panel chart-panel">
+              <div className="panel-heading">
+                <h2>Tình trạng phòng</h2>
+                <span>Còn trống và đã sử dụng</span>
+              </div>
+              <ResponsiveContainer width="100%" height={320}>
+                <BarChart data={stats.roomData}>
+                  <XAxis dataKey="name" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="used" name="Đã sử dụng" fill="#1972bb" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="available" name="Còn trống" fill="#27ae60" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </section>
+          </div>
+        </section>
+      </main>
+
       <Navbar />
     </div>
   );
