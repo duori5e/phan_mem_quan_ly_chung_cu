@@ -47,7 +47,7 @@ const Vehicle = () => {
 
 
   const vehicleImageLinks = [
-    "https://cdn.vietnammoi.vn/2019/3/30/kha-2-15538558574391783403737-1553906380493830876080.png", // Xe máy
+    "https://www.motopinas.com/image.php?src=/images/posts/post15683.jpg&w=1200", // Xe máy
     "https://tse2.mm.bing.net/th/id/OIP.VfVL0GTwEPJZOfrCodX0qAHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
   ];
 
