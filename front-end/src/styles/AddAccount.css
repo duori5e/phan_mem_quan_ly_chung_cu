@@ -1,9 +1,9 @@
 .account-form-overlay {
   position: fixed;
-  top: 0;
+  top: 65px;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: calc(100vh - 65px);
   background: rgba(0,0,0,0.3);
   display: flex;
   align-items: center;
@@ -18,7 +18,7 @@
   padding: 22px 24px 18px 24px;
   width: min(430px, 95vw);
   max-width: 95vw;
-  max-height: calc(100vh - 40px);
+  max-height: calc(100vh - 105px);
   box-shadow: 0 2px 16px rgba(0,0,0,0.15);
   position: relative;
   display: flex;
@@ -115,7 +115,7 @@
 
   .modal.account-form-modal {
     width: 100%;
-    max-height: calc(100vh - 24px);
+    max-height: calc(100vh - 89px);
     padding: 18px 14px 14px;
   }
 

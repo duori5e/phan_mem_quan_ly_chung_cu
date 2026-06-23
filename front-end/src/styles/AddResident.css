@@ -1,9 +1,9 @@
 .resident-form-overlay {
   position: fixed;
-  top: 0;
+  top: 65px;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: calc(100vh - 65px);
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   background-color: rgba(0, 0, 0, 0.3);
@@ -20,7 +20,7 @@
   border-radius: 12px;
   width: 90%;
   max-width: 900px;
-  max-height: calc(100vh - 40px);
+  max-height: calc(100vh - 105px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   animation: popup-fade 0.3s ease;
   color: #333;
@@ -185,7 +185,7 @@
 
   .modal-form.resident-form-modal {
     width: 100%;
-    max-height: calc(100vh - 24px);
+    max-height: calc(100vh - 89px);
     padding: 18px 14px;
   }
 

@@ -301,7 +301,7 @@ html, body {
 
 .edit-modal {
   position: fixed;
-  top: 0;
+  top: 65px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -318,7 +318,7 @@ html, body {
   border-radius: 8px;
   width: 90%;
   max-width: 500px;
-  max-height: calc(100vh - 40px);
+  max-height: calc(100vh - 105px);
   overflow-y: auto;
 }
 

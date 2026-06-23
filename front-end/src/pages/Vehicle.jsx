@@ -401,10 +401,6 @@ const Vehicle = () => {
 
           {/* home-content sẽ có class thay đổi để margin-left phù hợp */}
           <div className={`vehicle-content ${open ? 'sidebar-open' : 'sidebar-closed'}`}>
-            <div className="vehicle-header">
-              <h1>Đây là trang quản lý phương tiện</h1>
-            </div>
-            
             {loading && <p>Đang tải dữ liệu...</p>}
             {error && <p style={{ color: 'red' }}>{error}</p>}
             
