@@ -70,13 +70,6 @@ const getMonthName = (month) => {
   return months[month];
 };
 
-const getCompletionLevel = (percentage) => {
-  if (percentage >= 100) return 'Xuất sắc';
-  if (percentage >= 80) return 'Tốt';
-  if (percentage >= 50) return 'Khá';
-  return 'Cần theo dõi';
-};
-
 const formatCurrency = (amount) =>
   `${Number(amount || 0).toLocaleString('vi-VN')} VNĐ`;
 
@@ -217,7 +210,6 @@ const Home = () => {
       totalFeeTypes: new Set(currentMonthCollections.map((collection) => collection.FeeType)).size,
       totalAmount,
       paymentPercentage,
-      completionLevel: getCompletionLevel(paymentPercentage),
       paidFeeDetails: paidFeeDetails.length,
       totalFeeDetails: payableFeeDetails.length,
       newComeCount: residents.filter((resident) => isWithin14Days(resident.RegistrationDate)).length,
@@ -334,7 +326,6 @@ const Home = () => {
             <section className="dashboard-panel chart-panel">
               <div className="panel-heading">
                 <h2>Cơ cấu nhân khẩu</h2>
-                <span>Theo nhóm tuổi</span>
               </div>
               <ResponsiveContainer width="100%" height={320}>
                 <PieChart>
@@ -360,7 +351,6 @@ const Home = () => {
             <section className="dashboard-panel chart-panel">
               <div className="panel-heading">
                 <h2>Tình trạng phòng</h2>
-                <span>Còn trống và đã sử dụng</span>
               </div>
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={stats.roomData}>
