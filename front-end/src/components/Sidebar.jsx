@@ -34,7 +34,7 @@ const Sidebar = () => {
   const displayName =
     localStorage.getItem('fullname') ||
     localStorage.getItem('username') ||
-    'Nguyễn Văn A';
+    '';
 
   const userMenu = dropdownItems.filter(
     item => !item.adminOnly || userRole === 'Tổ trưởng'

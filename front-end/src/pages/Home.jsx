@@ -253,13 +253,7 @@ const Home = () => {
 
       <main className={`home-content ${open ? 'sidebar-open' : 'sidebar-closed'}`}>
         <section className="dashboard">
-          <div className="dashboard-heading">
-            <div>
-              <span className="dashboard-eyebrow">Tổng quan vận hành</span>
-              <h1>Thống kê chung cư</h1>
-            </div>
-            <span className="dashboard-period">{stats.monthName}</span>
-          </div>
+
 
           {error && <div className="dashboard-alert">{error}</div>}
           {loading && <div className="dashboard-loading">Đang tải dữ liệu thống kê...</div>}
@@ -367,7 +361,7 @@ const Home = () => {
         </section>
       </main>
 
-      <Navbar />
+   
     </div>
   );
 };

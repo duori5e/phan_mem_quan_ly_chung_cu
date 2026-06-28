@@ -52,6 +52,7 @@ const Login = () => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', data.role);
       localStorage.setItem('id', data.id);
+      localStorage.setItem('username', data.username);
       // console.log("id", data.id);
       // console.log(data);
       navigate('/home');
